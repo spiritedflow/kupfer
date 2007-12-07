@@ -4,7 +4,9 @@
 import gtk
 import gobject
 import itertools
+
 from .data import DataController
+from iconwell import IconWell
 
 # State Constants
 class State (object):
@@ -112,11 +114,6 @@ class MatchView (gtk.Bin):
 		self.cur_text = None
 		self.cur_match = None
 
-		# Get the current selection color
-		ent = gtk.Entry()
-		newc = ent.style.bg[3]
-		self.event_box.modify_bg(gtk.STATE_SELECTED, newc)
-
 	def build_widget(self):
 		"""
 		Core initalization method that builds the widget
@@ -126,7 +123,7 @@ class MatchView (gtk.Bin):
 		self.label.set_justify(gtk.JUSTIFY_CENTER)
 		self.label.set_width_chars(self.label_char_width)
 		self.label.set_ellipsize(ELLIPSIZE_MIDDLE)
-		self.icon_view = gtk.Image()
+		self.icon_view = IconWell()
 
 		# infobox: icon and match name
 		infobox = gtk.HBox()
@@ -160,7 +157,7 @@ class MatchView (gtk.Bin):
 				icon = self._dim_icon(icon)
 			self.icon_view.set_from_pixbuf(icon)
 		else:
-			self.icon_view.set_from_stock("gtk-file", 96)
+			pass
 
 		if not self.cur_text:
 			self.label.set_text("<no text>")
@@ -250,10 +247,8 @@ class MatchView (gtk.Bin):
 		"""
 		Widget state (Active/normal/prelight etc)
 		"""
-		super(MatchView, self).set_state(state)
-		#self.label.set_state(gtk.STATE_NORMAL)
-		self.event_box.queue_draw()
-
+		self.icon_view.set_active(state is gtk.STATE_SELECTED)
+	
 gobject.type_register(MatchView)
 
 class Search (gtk.Bin):
