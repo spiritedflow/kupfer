@@ -838,14 +838,6 @@ class SourceListController (object):
 		setctl = settings.GetSettingsController()
 		setctl.connect("plugin-enabled-changed", self._refresh)
 
-	def _plugin_id_for_source(self, src):
-		plugin_modpath = kupfer.plugin.__name__.split(".")
-		modpath = type(src).__module__.split(".")
-		if modpath[:2] != plugin_modpath:
-			return None
-		else:
-			return modpath[2]
-
 	def _refresh(self, *ignored):
 		self.store.clear()
 		setctl = settings.GetSettingsController()
@@ -854,7 +846,7 @@ class SourceListController (object):
 
 		for src in srcs:
 			name = unicode(src)
-			plugin_id = sources.plugin_id_for_source(src)
+			plugin_id = sc.get_plugin_id_for_source(src)
 			if not plugin_id or setctl.get_plugin_is_hidden(plugin_id):
 				continue
 			gicon = src.get_icon()

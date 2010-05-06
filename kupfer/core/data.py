@@ -499,7 +499,7 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		sc.add(None, direct_sources, toplevel=True)
 		sc.add(None, other_sources, toplevel=False)
 		sc.initialize()
-		self.source_pane.source_rebase(sc.root)
+		self._reload_source_root()
 		learn.load()
 
 	def _get_directory_sources(self):
@@ -574,11 +574,24 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		if enabled and not plugins.is_plugin_loaded(plugin_id):
 			sources = self._load_plugin(plugin_id)
 			self._insert_sources(plugin_id, sources, initialize=False)
+		elif not enabled:
+			self._remove_plugin(plugin_id)
 
-	def _plugin_catalog_changed(self, setctl, plugin_id, toplevel):
-		self.output_debug("Catalog configuration changed")
+	def _remove_plugin(self, plugin_id):
+		sc = GetSourceController()
+		for src in set(sc.sources):
+			if plugin_id == sc.get_plugin_id_for_source(src):
+				sc.remove(src, finalize=True)
+		pluginload.remove_plugin(plugin_id)
+		self._reload_source_root()
+
+	def _reload_source_root(self):
+		self.output_debug("Reloading source root")
 		sc = GetSourceController()
 		self.source_pane.source_rebase(sc.root)
+
+	def _plugin_catalog_changed(self, setctl, plugin_id, toplevel):
+		self._reload_source_root()
 
 	def _insert_sources(self, plugin_id, sources, initialize=True):
 		if not sources:
@@ -589,7 +602,7 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 			is_toplevel = setctl.get_source_is_toplevel(plugin_id, src)
 			sc.add(plugin_id, (src, ), toplevel=is_toplevel,
 			       initialize=initialize)
-		self.source_pane.source_rebase(sc.root)
+		self._reload_source_root()
 
 	def _finish(self, sched):
 		self.output_info("Saving data...")

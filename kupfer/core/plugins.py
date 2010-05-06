@@ -366,6 +366,12 @@ def initialize_plugin(plugin_name):
 		return
 	settings_dict.initialize(plugin_name)
 
+def finalize_plugin(plugin_name):
+	pass
+
+def unimport_plugin(plugin_name):
+	del _imported_plugins[plugin_name]
+
 def get_plugin_error(plugin_name):
 	"""
 	Return None if plugin is loaded without error, else

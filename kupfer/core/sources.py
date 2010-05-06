@@ -241,9 +241,6 @@ class SourceDataPickler (pretty.OutputMixin):
 			output.close()
 		return True
 
-def plugin_id_for_source(source):
-	return GetSourceController().plugin_source_map.get(source)
-
 class SourceController (pretty.OutputMixin):
 	"""Control sources; loading, pickling, rescanning
 
@@ -283,12 +280,16 @@ class SourceController (pretty.OutputMixin):
 		self.text_sources.update(srcs)
 
 	def remove(self, src, finalize=False):
-		assert not finalize, "Can't finalize sources yet"
 		self._pre_root = None
 		self.toplevel_sources.discard(src)
 		self.sources.discard(src)
 		self.rescanner.set_catalog(self.sources)
+		if finalize:
+			self._finalize_source(src)
 		self.output_debug("Removing", src, "finalize:", finalize)
+
+	def get_plugin_id_for_source(self, source):
+		return self.plugin_source_map.get(source)
 
 	def get_text_sources(self):
 		return self.text_sources
@@ -434,7 +435,20 @@ class SourceController (pretty.OutputMixin):
 		configsaver = SourceDataPickler()
 		for source in self.sources:
 			if configsaver.source_has_config(source):
-				configsaver.save_source(source)
+				self._save_source(source, pickler=configsaver)
+
+	@classmethod
+	def _save_source(self, source, pickler=None):
+		source.finalize()
+		configsaver = pickler or SourceDataPickler()
+		configsaver.save_source(source)
+
+	def _finalize_source(self, source):
+		"Either save config, or save cache for @source"
+		if SourceDataPickler.source_has_config(source):
+			self._save_source(source)
+		elif not source.is_dynamic():
+			self._pickle_source(source)
 
 	def _try_restore(self, sources):
 		"""
@@ -457,9 +471,15 @@ class SourceController (pretty.OutputMixin):
 		sourcepickler.rm_old_cachefiles()
 		for source in sources:
 			if (source.is_dynamic() or
-			    SourceDataPickler.source_has_config(source)):
+				SourceDataPickler.source_has_config(source)):
 				continue
-			sourcepickler.pickle_source(source)
+			self._pickle_source(source, pickler=sourcepickler)
+
+	@classmethod
+	def _pickle_source(self, source, pickler=None):
+		source.finalize()
+		sourcepickler = pickler or SourcePickler()
+		sourcepickler.pickle_source(source)
 
 	def _remove_source(self, source):
 		"Oust @source from catalog if any exception is raised"
