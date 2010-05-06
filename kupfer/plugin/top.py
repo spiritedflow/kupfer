@@ -26,7 +26,6 @@ __kupfer_settings__ = plugin_support.PluginSettings(
 		"alternatives": [_("Commandline"), _("CPU usage (descending)"),
 				_("Memory usage (descending)") ]
 	},
-	plugin_support.SETTING_PREFER_CATALOG,
 )
 
 
@@ -87,6 +86,8 @@ class _SignalsSource(Source):
 	
 
 class TaskSource(Source, PicklingHelperMixin):
+	source_prefer_sublevel = True
+
 	def __init__(self, name=_("Running Tasks")):
 		Source.__init__(self, name)
 

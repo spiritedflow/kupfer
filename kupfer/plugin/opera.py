@@ -15,14 +15,11 @@ from kupfer import plugin_support
 from kupfer.obj.apps import ApplicationSource
 
 
-__kupfer_settings__ = plugin_support.PluginSettings(
-		plugin_support.SETTING_PREFER_CATALOG,
-)
-
 BOOKMARKS_FILE = "bookmarks.adr"
 
 class BookmarksSource(ApplicationSource):
 	appleaf_content_id = "opera"
+	source_prefer_sublevel = True
 
 	def __init__(self, name=_("Opera Bookmarks")):
 		Source.__init__(self, name)
