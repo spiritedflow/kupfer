@@ -868,10 +868,12 @@ class SourceListController (object):
 		srccol = self.columns.index("source")
 		plugin_id = self.store.get_value(it, idcol)
 		src = self.store.get_value(it, srccol)
-		setctl = settings.GetSettingsController()
-		setctl.set_source_is_toplevel(plugin_id, src, is_toplevel)
 
 		sc = sources.GetSourceController()
 		sc.remove(src, finalize=False)
 		sc.add(plugin_id, (src, ), toplevel=is_toplevel, initialize=False)
+
+		setctl = settings.GetSettingsController()
+		setctl.set_source_is_toplevel(plugin_id, src, is_toplevel)
+
 

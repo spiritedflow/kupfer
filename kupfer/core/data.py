@@ -544,6 +544,7 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 
 		setctl = settings.GetSettingsController()
 		setctl.connect("plugin-enabled-changed", self._plugin_enabled)
+		setctl.connect("plugin-toplevel-changed", self._plugin_catalog_changed)
 
 		for item in plugins.get_plugin_ids():
 			if not setctl.get_plugin_enabled(item):
@@ -574,13 +575,20 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 			sources = self._load_plugin(plugin_id)
 			self._insert_sources(plugin_id, sources, initialize=False)
 
+	def _plugin_catalog_changed(self, setctl, plugin_id, toplevel):
+		self.output_debug("Catalog configuration changed")
+		sc = GetSourceController()
+		self.source_pane.source_rebase(sc.root)
+
 	def _insert_sources(self, plugin_id, sources, initialize=True):
 		if not sources:
 			return
-		setctl = settings.GetSettingsController()
-		is_toplevel = setctl.get_plugin_is_toplevel(plugin_id)
 		sc = GetSourceController()
-		sc.add(plugin_id, sources, toplevel=is_toplevel, initialize=initialize)
+		setctl = settings.GetSettingsController()
+		for src in sources:
+			is_toplevel = setctl.get_source_is_toplevel(plugin_id, src)
+			sc.add(plugin_id, (src, ), toplevel=is_toplevel,
+			       initialize=initialize)
 		self.source_pane.source_rebase(sc.root)
 
 	def _finish(self, sched):

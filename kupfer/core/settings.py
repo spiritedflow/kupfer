@@ -191,6 +191,7 @@ class SettingsController (gobject.GObject, pretty.OutputMixin):
 		"""General interface, but section must exist"""
 		key = key.lower()
 		value = self._config[section].get(key)
+		self.output_debug("Get raw config:", section, key, "=", value)
 		return value
 
 	def _set_raw_config(self, section, key, value):
@@ -251,7 +252,7 @@ class SettingsController (gobject.GObject, pretty.OutputMixin):
 
 	def set_source_is_toplevel(self, plugin_id, src, value):
 		key = "kupfer_toplevel_" + self._config_repr(src)
-		default = not getattr(src, "source_prefer_sublevel", False)
+		self.emit("plugin-toplevel-changed", plugin_id, value)
 		return self.set_plugin_config(plugin_id, key,
 		                              value, value_type=strbool)
 
@@ -398,6 +399,11 @@ gobject.signal_new("value-changed", SettingsController, gobject.SIGNAL_RUN_LAST,
 
 # Plugin ID, Value
 gobject.signal_new("plugin-enabled-changed", SettingsController,
+		gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN,
+		(gobject.TYPE_STRING, gobject.TYPE_INT))
+
+# Plugin ID, Value
+gobject.signal_new("plugin-toplevel-changed", SettingsController,
 		gobject.SIGNAL_RUN_LAST, gobject.TYPE_BOOLEAN,
 		(gobject.TYPE_STRING, gobject.TYPE_INT))
 
