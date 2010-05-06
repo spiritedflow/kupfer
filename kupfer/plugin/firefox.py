@@ -26,6 +26,7 @@ __kupfer_settings__ = plugin_support.PluginSettings(
 
 class BookmarksSource (AppLeafContentMixin, Source, FilesystemWatchMixin):
 	appleaf_content_id = ("firefox", "iceweasel")
+	source_prefer_sublevel = True
 	def __init__(self):
 		super(BookmarksSource, self).__init__(_("Firefox Bookmarks"))
 		self._history = []

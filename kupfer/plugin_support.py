@@ -16,7 +16,7 @@ __all__ = [
 # Only use this for plugins with potentially *thousands* of leaves.
 SETTING_PREFER_CATALOG = {
 	"key" : "kupfer_toplevel",
-	"label": _("Include in top level"),
+	"label": _("Include in top level (obsolete"),
 	"type": bool,
 	"value": False,
 	"tooltip": _(

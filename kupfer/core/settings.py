@@ -238,6 +238,23 @@ class SettingsController (gobject.GObject, pretty.OutputMixin):
 		return self.get_plugin_config(plugin_id, "kupfer_hidden",
 				value_type=strbool, default=False)
 
+	@classmethod
+	def _config_repr(self, obj):
+		name = type(obj).__name__
+		return "".join([(c if c.isalnum() else '_') for c in name])
+
+	def get_source_is_toplevel(self, plugin_id, src):
+		key = "kupfer_toplevel_" + self._config_repr(src)
+		default = not getattr(src, "source_prefer_sublevel", False)
+		return self.get_plugin_config(plugin_id, key,
+		                              value_type=strbool, default=default)
+
+	def set_source_is_toplevel(self, plugin_id, src, value):
+		key = "kupfer_toplevel_" + self._config_repr(src)
+		default = not getattr(src, "source_prefer_sublevel", False)
+		return self.set_plugin_config(plugin_id, key,
+		                              value, value_type=strbool)
+
 	def get_keybinding(self):
 		"""Convenience: Kupfer keybinding as string"""
 		return self.get_config("Kupfer", "keybinding")
