@@ -846,7 +846,7 @@ class SourceListController (object):
 
 		for src in srcs:
 			name = unicode(src)
-			plugin_id = sc.get_plugin_id_for_source(src)
+			plugin_id = sc.get_plugin_id_for_object(src)
 			if not plugin_id or setctl.get_plugin_is_hidden(plugin_id):
 				continue
 			gicon = src.get_icon()

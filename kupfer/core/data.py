@@ -437,14 +437,14 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		sch.connect("load", self._load)
 		sch.connect("finish", self._finish)
 
-	def register_text_sources(self, srcs):
+	def register_text_sources(self, plugin_id, srcs):
 		"""Pass in text sources as @srcs
 
 		we register text sources """
 		sc = GetSourceController()
-		sc.add_text_sources(srcs)
+		sc.add_text_sources(plugin_id, srcs)
 	
-	def register_action_decorators(self, actions):
+	def register_action_decorators(self, plugin_id, actions):
 		# Keep a mapping: Decorated Leaf Type -> List of actions
 		decorate_types = {}
 		for action in actions:
@@ -453,13 +453,13 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		if not decorate_types:
 			return
 		sc = GetSourceController()
-		sc.add_action_decorators(decorate_types)
+		sc.add_action_decorators(plugin_id, decorate_types)
 		self.output_debug("Actions:")
 		for typ in decorate_types:
 			self.output_debug(typ.__name__)
 			self._list_plugin_objects(decorate_types[typ])
 
-	def register_content_decorators(self, contents):
+	def register_content_decorators(self, plugin_id, contents):
 		"""
 		Register the sequence of classes @contents as
 		potential content decorators. Classes not conforming to
@@ -478,7 +478,7 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		if not decorate_item_types:
 			return
 		sc = GetSourceController()
-		sc.add_content_decorators(decorate_item_types)
+		sc.add_content_decorators(plugin_id, decorate_item_types)
 		self.output_debug("Content decorators:")
 		for typ in decorate_item_types:
 			self.output_debug(typ.__name__)
@@ -563,9 +563,9 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		"""
 		with pluginload.exception_guard(plugin_id):
 			plugin = pluginload.load_plugin(plugin_id)
-			self.register_text_sources(plugin.text_sources)
-			self.register_action_decorators(plugin.action_decorators)
-			self.register_content_decorators(plugin.content_decorators)
+			self.register_text_sources(plugin_id, plugin.text_sources)
+			self.register_action_decorators(plugin_id, plugin.action_decorators)
+			self.register_content_decorators(plugin_id, plugin.content_decorators)
 			return set(plugin.sources)
 		return set()
 
@@ -579,11 +579,9 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 
 	def _remove_plugin(self, plugin_id):
 		sc = GetSourceController()
-		for src in set(sc.sources):
-			if plugin_id == sc.get_plugin_id_for_source(src):
-				sc.remove(src, finalize=True)
+		if sc.remove_objects_for_plugin_id(plugin_id):
+			self._reload_source_root()
 		pluginload.remove_plugin(plugin_id)
-		self._reload_source_root()
 
 	def _reload_source_root(self):
 		self.output_debug("Reloading source root")
