@@ -573,7 +573,7 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		from kupfer.core import plugins
 		if enabled and not plugins.is_plugin_loaded(plugin_id):
 			sources = self._load_plugin(plugin_id)
-			self._insert_sources(plugin_id, sources, initialize=False)
+			self._insert_sources(plugin_id, sources, initialize=True)
 		elif not enabled:
 			self._remove_plugin(plugin_id)
 
