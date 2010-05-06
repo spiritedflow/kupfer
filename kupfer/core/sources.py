@@ -241,6 +241,9 @@ class SourceDataPickler (pretty.OutputMixin):
 			output.close()
 		return True
 
+def plugin_id_for_source(source):
+	return GetSourceController().plugin_source_map.get(source)
+
 class SourceController (pretty.OutputMixin):
 	"""Control sources; loading, pickling, rescanning
 

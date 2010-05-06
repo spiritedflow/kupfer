@@ -845,12 +845,13 @@ class SourceListController (object):
 
 	def _refresh(self):
 		self.store.clear()
-		srcs = sorted(sources.GetSourceController().sources, key=unicode)
 		setctl = settings.GetSettingsController()
+		sc = sources.GetSourceController()
+		srcs = sorted(sc.sources, key=unicode)
 
 		for src in srcs:
 			name = unicode(src)
-			plugin_id = self._plugin_id_for_source(src)
+			plugin_id = sources.plugin_id_for_source(src)
 			if not plugin_id or setctl.get_plugin_is_hidden(plugin_id):
 				continue
 			gicon = src.get_icon()
@@ -869,4 +870,8 @@ class SourceListController (object):
 		src = self.store.get_value(it, srccol)
 		setctl = settings.GetSettingsController()
 		setctl.set_source_is_toplevel(plugin_id, src, is_toplevel)
+
+		sc = sources.GetSourceController()
+		sc.remove(src, finalize=False)
+		sc.add(plugin_id, (src, ), toplevel=is_toplevel, initialize=False)
 
