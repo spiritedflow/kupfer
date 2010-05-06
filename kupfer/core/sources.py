@@ -8,6 +8,7 @@ import cPickle as pickle
 import os
 import threading
 import time
+import weakref
 
 from kupfer import config, pretty, scheduler
 from kupfer import conspickle
@@ -249,6 +250,7 @@ class SourceController (pretty.OutputMixin):
 	def __init__(self):
 		self.rescanner = PeriodicRescanner(period=3)
 		self.sources = set()
+		self.plugin_source_map = weakref.WeakKeyDictionary()
 		self.toplevel_sources = set()
 		self.text_sources = set()
 		self.content_decorators = {}
@@ -257,7 +259,7 @@ class SourceController (pretty.OutputMixin):
 		self._restored_sources = set()
 		self._pre_root = None
 
-	def add(self, srcs, toplevel=False, initialize=False):
+	def add(self, plugin_id, srcs, toplevel=False, initialize=False):
 		self._pre_root = None
 		sources = set(self._try_restore(srcs))
 		self._restored_sources.update(sources)
@@ -269,9 +271,22 @@ class SourceController (pretty.OutputMixin):
 		if initialize:
 			self._initialize_sources(sources)
 			self._cache_sources(sources)
+		if plugin_id:
+			for src in sources:
+				self.plugin_source_map[src] = plugin_id
 		self.rescanner.set_catalog(self.sources)
+
 	def add_text_sources(self, srcs):
 		self.text_sources.update(srcs)
+
+	def remove(self, src, finalize=False):
+		assert not finalize, "Can't finalize sources yet"
+		self._pre_root = None
+		self.toplevel_sources.discard(src)
+		self.sources.discard(src)
+		self.rescanner.set_catalog(self.sources)
+		self.output_debug("Removing", src, "finalize:", finalize)
+
 	def get_text_sources(self):
 		return self.text_sources
 	def add_content_decorators(self, decos):

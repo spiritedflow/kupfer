@@ -496,8 +496,8 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		sc = GetSourceController()
 		direct_sources = set(S_s)
 		other_sources = set(s_s) - direct_sources
-		sc.add(direct_sources, toplevel=True)
-		sc.add(other_sources, toplevel=False)
+		sc.add(None, direct_sources, toplevel=True)
+		sc.add(None, other_sources, toplevel=False)
 		sc.initialize()
 		self.source_pane.source_rebase(sc.root)
 		learn.load()
@@ -542,9 +542,6 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		"""
 		from kupfer.core import plugins
 
-		s_sources = []
-		S_sources = []
-
 		setctl = settings.GetSettingsController()
 		setctl.connect("plugin-enabled-changed", self._plugin_enabled)
 
@@ -552,18 +549,11 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 			if not setctl.get_plugin_enabled(item):
 				continue
 			sources = self._load_plugin(item)
-			if setctl.get_plugin_is_toplevel(item):
-				S_sources.extend(sources)
-			else:
-				s_sources.extend(sources)
+			self._insert_sources(item, sources, initialize=False)
 
 		D_dirs, d_dirs = self._get_directory_sources()
-		S_sources.extend(D_dirs)
-		s_sources.extend(d_dirs)
 
-		if not S_sources and not s_sources:
-			pretty.print_info(__name__, "No sources found!")
-		return S_sources, s_sources
+		return D_dirs, d_dirs
 
 	def _load_plugin(self, plugin_id):
 		"""
@@ -582,15 +572,15 @@ class DataController (gobject.GObject, pretty.OutputMixin):
 		from kupfer.core import plugins
 		if enabled and not plugins.is_plugin_loaded(plugin_id):
 			sources = self._load_plugin(plugin_id)
-			self._insert_sources(plugin_id, sources)
+			self._insert_sources(plugin_id, sources, initialize=False)
 
-	def _insert_sources(self, plugin_id, sources):
+	def _insert_sources(self, plugin_id, sources, initialize=True):
 		if not sources:
 			return
 		setctl = settings.GetSettingsController()
 		is_toplevel = setctl.get_plugin_is_toplevel(plugin_id)
 		sc = GetSourceController()
-		sc.add(sources, toplevel=is_toplevel, initialize=True)
+		sc.add(plugin_id, sources, toplevel=is_toplevel, initialize=initialize)
 		self.source_pane.source_rebase(sc.root)
 
 	def _finish(self, sched):
