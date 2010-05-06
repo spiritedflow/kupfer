@@ -835,6 +835,9 @@ class SourceListController (object):
 		self.table.show()
 		parent_widget.add(self.table)
 
+		setctl = settings.GetSettingsController()
+		setctl.connect("plugin-enabled-changed", self._refresh)
+
 	def _plugin_id_for_source(self, src):
 		plugin_modpath = kupfer.plugin.__name__.split(".")
 		modpath = type(src).__module__.split(".")
@@ -843,7 +846,7 @@ class SourceListController (object):
 		else:
 			return modpath[2]
 
-	def _refresh(self):
+	def _refresh(self, *ignored):
 		self.store.clear()
 		setctl = settings.GetSettingsController()
 		sc = sources.GetSourceController()
