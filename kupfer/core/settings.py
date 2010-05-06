@@ -191,7 +191,6 @@ class SettingsController (gobject.GObject, pretty.OutputMixin):
 		"""General interface, but section must exist"""
 		key = key.lower()
 		value = self._config[section].get(key)
-		self.output_debug("Get raw config:", section, key, "=", value)
 		return value
 
 	def _set_raw_config(self, section, key, value):
