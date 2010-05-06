@@ -277,7 +277,6 @@ class SourceController (pretty.OutputMixin):
 		"Register a plugin id mapping for @objects"
 		for obj in objects:
 			self.plugin_object_map[obj] = plugin_id
-			self.output_info("Registering", plugin_id, repr(obj), id(obj))
 
 	def remove(self, src, finalize=False):
 		self._pre_root = None
